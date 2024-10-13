@@ -82,6 +82,7 @@ def __init__(app, logger):
             url = filtered[0].url
 
         tracker = trackers.get(extractTLD(url).registered_domain)
+        logger.debug(f"extracted tracker domain from url, url={url} tracker={tracker}")
 
         if app.added_on:
             tags_to_add.append(calculate_date_tags("added", t.added_on, today))
@@ -93,7 +94,8 @@ def __init__(app, logger):
             if tracker:
                 tags_to_add.append(f"site:{tracker['name']}")
             else:
-                tags_to_add.append(f"site:unmapped")
+                logger.warn(f"No tracker configured for url {url}")
+                tags_to_add.append("site:unmapped")
 
         if (app.unregistered or app.tracker_down or app.not_working) and filtered:
             messages = [z.msg.upper() for z in filtered]
@@ -143,12 +145,12 @@ def __init__(app, logger):
         logger.info(f"Removed {len(empty_tags)} old tags from qBittorrent")
 
     for tag, tagged in tags.items():
-        old_torrents = [t.hash for t in torrents if tag in t.tags and not t in tagged]
+        old_torrents = [t.hash for t in torrents if tag in t.tags and t not in tagged]
         if old_torrents:
             app.client.torrents_remove_tags(tags=tag, torrent_hashes=old_torrents)
             logger.info(f"Untagged {len(old_torrents)} old torrents with tag: {tag}")
 
-        new_torrents = [t.hash for t in tagged if not tag in t.tags]
+        new_torrents = [t.hash for t in tagged if tag not in t.tags]
         if new_torrents:
             app.client.torrents_add_tags(tags=tag, torrent_hashes=new_torrents)
             logger.info(f"Tagged {len(new_torrents)} new torrents with tag: {tag}")
