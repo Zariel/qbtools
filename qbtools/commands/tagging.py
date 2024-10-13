@@ -81,8 +81,9 @@ def __init__(app, logger):
                 continue
             url = filtered[0].url
 
-        tracker = trackers.get(extractTLD(url).registered_domain)
-        logger.debug(f"extracted tracker domain from url, url={url} tracker={tracker}")
+        domain = extractTLD(url).registered_domain
+        tracker = trackers.get(domain)
+        logger.debug(f"extracted tracker domain from url, url={url} domain={domain}")
 
         if app.added_on:
             tags_to_add.append(calculate_date_tags("added", t.added_on, today))
@@ -94,7 +95,7 @@ def __init__(app, logger):
             if tracker:
                 tags_to_add.append(f"site:{tracker['name']}")
             else:
-                logger.warn(f"No tracker configured for url {url}")
+                logger.warn(f"No tracker configured for {domain}")
                 tags_to_add.append("site:unmapped")
 
         if (app.unregistered or app.tracker_down or app.not_working) and filtered:
