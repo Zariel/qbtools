@@ -51,6 +51,13 @@ def add_default_args(parser):
         help="Password for qBittorrent",
         required=False,
     )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action='store_true',
+        help="Enable verbose logging for debugging",
+        required=False,
+    )
 
 
 def load_commands(subparsers):
@@ -126,6 +133,10 @@ def main():
     if not app.command:
         parser.print_help()
         sys.exit(1)
+
+    if app.verbose:
+        logger.setLevel(logging.DEBUG)
+        logger.debug("verbose logging enabled")
 
     app.client = qbit_client(app)
     app.config = get_config(app)
